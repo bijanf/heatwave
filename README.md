@@ -1,18 +1,42 @@
-# Heatwave Duration Index (HWDI)
-calculating the Heat Wave Duration Index (HWDI) from ATTRICIV1.1 dataset 
+# Heatwave Duration Index (HWDI) Calculation
 
+This repository provides scripts for calculating the Heat Wave Duration Index (HWDI) using the ATTRICIV1.1 dataset, aiming to analyze heatwave occurrences and their intensity.
 
-![Heat Wave Duration Index (HWDI) for 5 days](HWDI_Difference_Map_5_7.png)  
-*a. HWDI difference map for n day = 5 and T = 7K*
+## Installation
 
-![Heat Wave Duration Index (HWDI) for 10 days](HWDI_Difference_Map_10_7.png)  
-*b. HWDI difference map for n day = 10 and T = 7K*
+Ensure Python is installed, then set up the environment:
 
-![Heat Wave Duration Index (HWDI) for 15 days](HWDI_Difference_Map_15_7.png)  
-*c. HWDI difference map for n day = 15 and T = 7K*
+```bash
+chmod +x pre_process.sh run_hwmid.sh
+```
 
-![Heat Wave Duration Index (HWDI) for 20 days](HWDI_Difference_Map_20_7.png)  
-*d. HWDI difference map for n day = 20 and T = 7K*
+## Usage
+First, preprocess the data:
 
-*Caption: Heat Wave Duration Index (HWDI) difference maps for different number of consecutive days used to define a heatwave n day = 5, 10, 15, 20 and 7K above the reference value (T = 7K) in a, b, c, and d, respectively.*
+```bash
+./pre_process.sh
+```
+Run the HWDI calculation script with the slurm on cluster:
+```bash
+./run_hwmid.sh
+```
 
+## Figures
+
+![HWDI for 5 days](HWDI_Difference_Map_5_7.png)  
+*a. HWDI difference map, n day = 5, T = 7K*
+
+![HWDI for 10 days](HWDI_Difference_Map_10_7.png)  
+*b. HWDI difference map, n day = 10, T = 7K*
+
+![HWDI for 15 days](HWDI_Difference_Map_15_7.png)  
+*c. HWDI difference map, n day = 15, T = 7K*
+
+![HWDI for 20 days](HWDI_Difference_Map_20_7.png)  
+*d. HWDI difference map, n day = 20, T = 7K*
+
+*Caption: Heat Wave Duration Index (HWDI) difference maps for varying consecutive days to define a heatwave (n day = 5, 10, 15, 20) and 7K above the reference value (T = 7K).*
+
+## Acknowledgments
+
+Credit to the creators of the ATTRICIV1.1 dataset and all supporting resources.

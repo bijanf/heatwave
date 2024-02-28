@@ -1,61 +1,67 @@
+from cdo import Cdo
 import xarray as xr
-import numpy as np
-import pandas as pd
+import matplotlib.pyplot as plt
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
 
-def print_green(message):
-    print(f"\033[92m{message}\033[0m")
+nday = 20
+T=7
+cdo = Cdo()
 
-# Assuming you've already loaded your dataset
-ds = xr.open_dataset('/p/tmp/fallah/work_counter/gswp3-w5e5_obsclim_tasmax_CA_daily_1901_onwards.nc')
-#ds = xr.open_dataset('/p/tmp/fallah/work_counter/gswp3-w5e5_counterclim_tasmax_CA_daily_1901_onwards.nc')
+# Define input files
+input_file1 = '/p/tmp/fallah/work_counter/gswp3-w5e5_counterclim_tasmax_CA_daily_1901_onwards.nc'
+input_file2 = '/p/tmp/fallah/work_counter/gswp3-w5e5_obsclim_tasmax_CA_daily_1901_onwards.nc'
 
-tasmax = ds['tasmax']
-print_green("Dataset loaded successfully.")
+# Set reference period
+reference_period = "1900/1929"  # Adjusted to your new reference period
 
-# Define the reference period
-reference_start = '1961-01-01'
-reference_end = '1990-12-31'
-reference_period = tasmax.sel(time=slice(reference_start, reference_end))
-print_green("Reference period defined.")
+# Calculate daily minimum and maximum temperatures for the reference period for both files
+min_temp_file1 = "min_temp_file1.nc"
 
-# Calculate the 90th percentile thresholds for each day of the year
-percentiles = reference_period.groupby('time.dayofyear').reduce(np.nanpercentile, q=90, dim='time')
-print_green("90th percentile thresholds calculated.")
+min_temp_file2 = "min_temp_file2.nc"
 
-# Function to find exceedances over the 90th percentile (heatwave days)
-def find_exceedances(tasmax, percentiles):
-    exceedances = tasmax.groupby('time.dayofyear') - percentiles
-    return exceedances.where(exceedances > 0)
 
-# Calculate exceedances
-exceedances = find_exceedances(tasmax, percentiles)
-print_green("Exceedances calculated.")
+cdo.ydaymean(input=f"-selyear,{reference_period} {input_file1}", output=min_temp_file1)
+#cdo.ydaymax(input=f"-selyear,1900/2019", output=max_temp_file1)
+cdo.ydaymean(input=f"-selyear,{reference_period} {input_file2}", output=min_temp_file2)
+#cdo.ydaymax(input=f"-selyear,1900/2019", output=max_temp_file2)
 
-# Convert to a binary format: 1 for exceedance, 0 otherwise
-heatwave_days = exceedances.notnull().astype(int)
-print_green("Heatwave days identified.")
 
-# Identify heatwave events: at least 3 consecutive days of exceedances
-def identify_heatwave_events(heatwave_days):
-    consecutive_days = heatwave_days.rolling(time=3, center=True).sum()
-    heatwave_events = consecutive_days >= 3
-    return heatwave_events
+# Calculate HWDI for both datasets
+hwdi_file1 = "hwdi_file1.nc"
+hwdi_file2 = "hwdi_file2.nc"
 
-# Identify heatwave events
-heatwave_events = identify_heatwave_events(heatwave_days)
-print_green("Heatwave events identified.")
+# Assuming nday and T values are correctly chosen for your analysis
+cdo.eca_hwdi(f"{nday},{T} {input_file1} {min_temp_file1}", output=hwdi_file1)
+cdo.eca_hwdi(f"{nday},{T} {input_file2} {min_temp_file2}", output=hwdi_file2)
 
-# Calculate the magnitude of each heatwave event (sum of exceedances during the event)
-heatwave_magnitude = (exceedances * heatwave_events).groupby('time.year').sum()
-print_green("Heatwave magnitudes calculated.")
+# Load HWDI datasets
+hwdi_ds1 = xr.open_dataset(hwdi_file1)
+hwdi_ds2 = xr.open_dataset(hwdi_file2)
 
-# Calculate the maximum heatwave magnitude for each year (HWMId)
-hwm_id = heatwave_magnitude.max(dim='year')
-print_green("HWMId calculated for each year.")
+# Assuming the variable storing HWDI in your NetCDF files is named 'hwdi'; adjust as necessary
+# Calculate difference
+hwdi_diff = -hwdi_ds1['heat_wave_duration_index_wrt_mean_of_reference_period'] +  hwdi_ds2['heat_wave_duration_index_wrt_mean_of_reference_period']
 
-# Save the result as a NetCDF file
-output_path = '/p/tmp/fallah/work_counter/hwm_id_obsclim.nc'
-#output_path = '/p/tmp/fallah/work_counter/hwm_id_counterclim.nc'
 
-hwm_id.to_netcdf(output_path)
-print_green(f"HWMId saved as a NetCDF file at {output_path}")
+# Plotting
+fig = plt.figure(figsize=(10, 6))
+ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
+
+# Add country borders and coastlines
+ax.add_feature(cfeature.BORDERS, linestyle='-', linewidth=1, edgecolor='k')
+ax.add_feature(cfeature.COASTLINE, linewidth=1.0, edgecolor='black')
+
+# Plot HWDI difference
+hwdi_diff.plot(ax=ax, transform=ccrs.PlateCarree(),
+               cmap='coolwarm', vmin=-200, vmax=200,  # Example color map and limits
+               cbar_kwargs={'shrink': .7, 'label': 'HWDI Difference\n obsclim minus counterclim'})
+
+# Title and labels
+ax.set_title('', fontsize=14)
+ax.set_xlabel('Longitude', fontsize=12)
+ax.set_ylabel('Latitude', fontsize=12)
+
+# Save the figure without white space around it
+plt.savefig('HWDI_Difference_Map_'+str(nday)+'_'+str(T)+'.png', bbox_inches='tight', pad_inches=0)
+plt.close(fig)  # Close the figure window after saving to free up memory

@@ -1,2 +1,3 @@
 # heatwave
-calculating the Heat-wave magnitude index daily (HWMId)
+calculating the Heat Wave Duration Index (HWDI) from ATTRICIV1.1 dataset 
+

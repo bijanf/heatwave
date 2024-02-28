@@ -40,3 +40,6 @@ Run the HWDI calculation script with the slurm on cluster:
 ## Acknowledgments
 
 Credit to the creators of the ATTRICIV1.1 dataset and all supporting resources.
+
+## Citation
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10723413.svg)](https://doi.org/10.5281/zenodo.10723413)

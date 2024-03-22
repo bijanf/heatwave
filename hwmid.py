@@ -1,3 +1,19 @@
+"""
+This script processes climate data to analyze and visualize differences in Heatwave Duration Index (HWDI) 
+between two distinct climate datasets over a specified reference period. The analysis involves several key steps:
+1. Utilizing Climate Data Operators (CDO) to calculate the daily mean temperatures during the reference period 
+for both datasets, which aids in identifying heatwave days based on a defined temperature threshold.
+2. Calculating the Heatwave Duration Index (HWDI) for both datasets. HWDI measures the total duration of heatwaves over a year,
+providing insights into the intensity and frequency of heatwaves under different climatic conditions. It is calculated by identifying 
+consecutive days where the temperature exceeds a certain threshold above the reference period's mean temperature.
+3. Comparing the HWDI between the two datasets to understand variations in heatwave characteristics, which could be indicative of 
+changes due to factors like climate change or different climate models.
+4. Visualizing the difference in HWDI on a geographic map using matplotlib and cartopy. This step involves plotting the geographical
+distribution of HWDI differences, highlighting areas with significant changes in heatwave durations.
+Dependencies include CDO for climate data manipulation, xarray for handling multi-dimensional arrays, matplotlib for visualization,
+and cartopy for geospatial data processing. This script is particularly useful for climate researchers and analysts looking to understand 
+the impacts of climatic conditions on heatwave patterns.
+"""
 from cdo import Cdo
 import xarray as xr
 import matplotlib.pyplot as plt
@@ -27,11 +43,19 @@ cdo.ydaymean(input=f"-selyear,{reference_period} {input_file2}", output=min_temp
 #cdo.ydaymax(input=f"-selyear,1900/2019", output=max_temp_file2)
 
 
-# Calculate HWDI for both datasets
+# Calculate the Heatwave Duration Index (HWDI) for both datasets
+# HWDI is calculated as follows:
+# 1. Identify all periods of at least 'nday' consecutive days where the daily maximum temperature
+#    exceeds a temperature threshold 'T' above the reference period mean.
+# 2. For each identified period, count the number of days that meet the criteria.
+# 3. The HWDI is the sum of all such periods' lengths over the year, providing a measure of
+#    the total duration of heatwaves within that year.
 hwdi_file1 = "hwdi_file1.nc"
 hwdi_file2 = "hwdi_file2.nc"
 
-# Assuming nday and T values are correctly chosen for your analysis
+
+# Assuming 'nday' and 'T' values are correctly chosen for your analysis,
+# use CDO to calculate HWDI, comparing each dataset against its own reference period mean temperature.
 cdo.eca_hwdi(f"{nday},{T} {input_file1} {min_temp_file1}", output=hwdi_file1)
 cdo.eca_hwdi(f"{nday},{T} {input_file2} {min_temp_file2}", output=hwdi_file2)
 

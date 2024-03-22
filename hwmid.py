@@ -4,13 +4,13 @@ import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 
-nday = 20
-T=7
+nday = 20 # Number of consecutive days to consider for a heatwave
+T=7  # Temperature threshold above which a day is considered part of a heatwave
 cdo = Cdo()
 
 # Define input files
-input_file1 = '/p/tmp/fallah/work_counter/gswp3-w5e5_counterclim_tasmax_CA_daily_1901_onwards.nc'
-input_file2 = '/p/tmp/fallah/work_counter/gswp3-w5e5_obsclim_tasmax_CA_daily_1901_onwards.nc'
+input_file1 = '/p/tmp/fallah/work_counter/gswp3-w5e5_counterclim_tasmax_CA_daily_1901_onwards.nc' #counterfactual cliamte data 
+input_file2 = '/p/tmp/fallah/work_counter/gswp3-w5e5_obsclim_tasmax_CA_daily_1901_onwards.nc' #factual climate data 
 
 # Set reference period
 reference_period = "1900/1929"  # Adjusted to your new reference period
